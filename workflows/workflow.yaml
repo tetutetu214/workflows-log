@@ -1,0 +1,21 @@
+main:
+  params: [args]
+  steps:
+    - init:
+        assign:
+          - size: ${args.size}
+          - cloudrun_url: ${sys.get_env("CLOUDRUN_URL")}
+
+    - call_cloudrun:
+        call: http.get
+        args:
+          url: ${cloudrun_url + "/generate?size=" + string(size)}
+          auth:
+            type: OIDC
+        result: api_response
+
+    - return_result:
+        return:
+          requested_size_kb: ${size}
+          response_body_size: ${len(json.encode_to_string(api_response.body))}
+          status: "success"
